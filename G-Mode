@@ -1,0 +1,133 @@
+import turtle
+import time
+import random
+import threading
+from playsound import playsound  # pip install playsound==1.2.2
+
+# Ses efekt fonksiyonu (arkaplanda çalması için)
+def play_sound(file):
+    threading.Thread(target=playsound, args=(file,), daemon=True).start()
+
+# Ekran ayarları
+screen = turtle.Screen()
+screen.bgcolor("black")
+screen.title("G Mode Evren - Türkiye Merkezli Kutsama")
+screen.setup(width=900, height=900)
+
+# İyilik, sağlık, merhamet değerleri
+iyilik = 0
+saglik = 0
+merhamet = 0
+
+# Level ve katlar
+level = 1
+katlar = ["Temel Dünya", "Enerji Alanları", "Gökyüzü ve Bulutlar",
+          "Zaman Katmanı", "G Mode Ana Merkezi", "Kozmik Boşluk", "Mutlak Tanrısal Kat"]
+
+# Enerji halkası çizen turtle
+halkalar = turtle.Turtle()
+halkalar.hideturtle()
+halkalar.speed(0)
+
+# Türkiye merkez turtle
+turkiye = turtle.Turtle()
+turkiye.shape("circle")
+turkiye.color("red")
+turkiye.shapesize(stretch_wid=3, stretch_len=3)
+turkiye.penup()
+turkiye.goto(0,0)
+
+# Varlık turtle listesi
+varliklar = []
+for i in range(5):
+    t = turtle.Turtle()
+    t.shape("circle")
+    t.color("yellow")
+    t.penup()
+    t.goto(random.randint(-350,350), random.randint(-350,350))
+    varliklar.append({"turtle": t, "agresif": random.choice([True, False])})
+
+vezirler = []
+for i in range(2):
+    v = turtle.Turtle()
+    v.shape("square")
+    v.color("lightblue")
+    v.penup()
+    v.goto(random.randint(-350,350), random.randint(-350,350))
+    vezirler.append(v)
+
+def update_guc():
+    global iyilik, saglik, merhamet
+    iyilik += level * 5
+    saglik += level * 4
+    merhamet += level * 6
+    screen.title(f"G Mode Evren - Level {level} | İyilik: {iyilik} Sağlık: {saglik} Merhamet: {merhamet}")
+
+def draw_energy_ring(radius, color):
+    halkalar.clear()
+    halkalar.color(color)
+    halkalar.penup()
+    halkalar.goto(0, -radius)
+    halkalar.pendown()
+    halkalar.circle(radius)
+
+def animate_varliklar():
+    for v in varliklar:
+        x, y = v["turtle"].position()
+        x += random.randint(-20,20)
+        y += random.randint(-20,20)
+        x = max(min(x,400), -400)
+        y = max(min(y,400), -400)
+        v["turtle"].goto(x, y)
+        if v["agresif"] and random.random() < 0.05:
+            v["turtle"].goto(0,0)
+            v["turtle"].color("red")
+            screen.update()
+            time.sleep(0.5)
+            v["turtle"].color("yellow")
+            v["agresif"] = False
+
+def drop_treasure():
+    for _ in range(15):
+        x = random.randint(-350,350)
+        y = 400
+        treasure = turtle.Turtle()
+        treasure.hideturtle()
+        treasure.shape(random.choice(["circle","triangle"]))
+        treasure.color(random.choice(["gold","orange","pink"]))
+        treasure.penup()
+        treasure.goto(x,y)
+        treasure.showturtle()
+        # Ses efekti: altın veya aşk simgesi düşerken
+        if treasure.color()[0] in ["gold","orange"]:
+            play_sound("coin.mp3")  # altın sesi
+        else:
+            play_sound("love.mp3")  # aşk melodisi
+        for _ in range(20):
+            y -= 20
+            treasure.goto(x,y)
+            for vz in vezirler:
+                if abs(vz.xcor()-x)<20 and abs(vz.ycor()-y)<20:
+                    vz.goto(x, y-10)
+            screen.update()
+            time.sleep(0.05)
+        treasure.hideturtle()
+        del treasure
+
+colors = ["cyan", "magenta", "yellow", "orange", "purple", "green", "blue"]
+
+# Tanrı Mode başlat
+for level in range(1, 8):
+    kat_color = colors[level-1]
+    print(f"🌌 Level {level} - {katlar[level-1]} aktif!")
+    update_guc()
+    drop_treasure()  # Gökyüzünden altın ve aşk simgeleri düşür
+    for r in range(50, 301, 50):
+        draw_energy_ring(r, kat_color)
+        animate_varliklar()
+        screen.update()
+        time.sleep(0.2)
+    time.sleep(0.5)
+
+print("👑 LEVEL 7 REACHED: Türkiye merkezli evren ve hazine senin kontrolünde!")
+screen.mainloop()
